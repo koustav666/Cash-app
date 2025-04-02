@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Page</title>
+    <!-- Bootstrap 4 CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- AppBar / Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <!-- Brand/Logo -->
+            <a class="navbar-brand" href="#">AppName</a>
+
+            <!-- Navbar Content -->
+            <div class="d-flex ml-auto">
+                <!-- Profile Name -->
+                <span class="navbar-text text-light mr-3">
+                    Hello, {{ user.username }}
+                </span>
+
+                <!-- Logout Button -->
+                <form method="post" action="{% url 'logout_view' %}" class="form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container for the Transaction Form -->
+    <div class="container mt-4">
+        <h2>Transaction Form</h2>
+
+        <!-- Main Form -->
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            
+            <!-- Display balance -->
+            <div class="form-group">
+                <label for="balance">Balance</label>
+                <div class="form-control" id="balance">{{ balance }}</div>
+            </div>
+            
+            <!-- Render the Form Fields -->
+            {{ form }} <!-- Render form using crispy if desired -->
+
+            <!-- Display error messages -->
+            {% if messages %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+            
+            <!-- Reset Button -->
+            <button type="reset" class="btn btn-secondary">Reset Form</button>
+        </form>
+
+        <!-- Admin Console Form -->
+        <form method="post" action="{% url 'check_transaction' %}" class="mb-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-info">Admin Console</button>
+        </form>
+
+        <hr>
+
+        <!-- Sent Transactions List -->
+        <h3>Sent Transactions</h3>
+        <ul class="list-group mb-4">
+            {% for s in sent %}
+                <li class="list-group-item">
+                    Sent to: <strong>{{ s.payee }}</strong> | Amount: <strong>{{ s.amount }}</strong> | Time: <strong>{{ s.timestamp }}</strong> | Success: {{ s.success }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">No sent transactions yet.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Received Transactions List -->
+        <h3>Received Transactions</h3>
+        <ul class="list-group">
+            {% for s in receive %}
+                <li class="list-group-item">
+                    Received from: <strong>{{ s.payer }}</strong> | Amount: <strong>{{ s.amount }}</strong> | Success: {{ s.success }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">No received transactions yet.</li>
+            {% endfor %}
+        </ul>
+
+    </div> <!-- End of Main Container -->
+
+    <!-- Bootstrap 4 JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

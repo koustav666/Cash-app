@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Check Transactions</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <!-- Brand/Logo -->
+        <a class="navbar-brand" href="#">AppName</a>
+
+        <!-- Navbar Content -->
+        <div class="d-flex ml-auto">
+          <!-- Profile Name -->
+          <span class="navbar-text text-light mr-3">
+            Hello, {{ user.username }}
+          </span>
+
+          <!-- Logout Button -->
+          <form
+            method="post"
+            action="{% url 'logout_view' %}"
+            class="form-inline"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    <h2>Check Transactions</h2>
+    <form method="POST" class="mb-4">
+      {% csrf_token %}
+
+      <!-- Payee Field -->
+      <div class="mb-3">
+        {{ form.payee.label_tag }} {{ form.payee}} 
+        {% if form.payee.errors %}
+          <div class="text-danger small">{{ form.payee.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Currency Field -->
+      <div class="mb-3">
+        {{ form.currency.label_tag }} {{ form.currency}} 
+        {% if form.currency.errors %}
+          <div class="text-danger small">{{ form.currency.errors }}</div>
+        {% endif %}
+      </div>
+
+      {% if messages %}
+      <div class="alert alert-danger">
+        <ul>
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-primary">Check Transactions</button>
+    </form>
+
+    <form method="post" action="{% url 'logout_view' %}" class="mb-4">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+
+    <!-- Displaying Transactions -->
+    <ul class="list-group">
+      {% for transaction in transactions %}
+      <li class="list-group-item">
+        Sent from: <strong>{{ transaction.payer }}</strong> | Received by:
+        <strong>{{ transaction.payee }}</strong> | Amount:
+        <strong>{{ transaction.amount }}</strong>
+        (in selected currency) | Time: <strong>{{ transaction.timestamp }}</strong> | Success: {{ transaction.success }}
+      </li>
+      {% empty %}
+      <li class="list-group-item">No transactions found.</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
