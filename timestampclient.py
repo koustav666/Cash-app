@@ -1,7 +1,7 @@
 
 import thriftpy2 as thriftpy
-from thriftpy.rpc import make_client
-from thriftpy.thrift import TException
+from thriftpy2.rpc import make_client
+from thriftpy2.thrift import TException
 timestamp_thrift = thriftpy.load('timestampservice.thrift', module_name='timestamp_thrift')
 Timestamp = timestamp_thrift.TimestampService
 def get_remote_timestamp():
