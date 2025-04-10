@@ -1,5 +1,45 @@
-Register User
-<form method='POST' action="">{% csrf_token %}
-    {{form}}
-    <input type="submit" value="Register">
-</form>
+<!-- Include Bootstrap CSS (if not already included in base template) -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-sm rounded">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Register User</h5>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        
+                        <!-- Render Django Form Fields with Bootstrap -->
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger">{{ field.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <!-- Currency Dropdown -->
+                        <div class="form-group">
+                            <label for="Currency">Preferred Currency</label>
+                            <select name="Currency" id="Currency" required class="form-control">
+                                <option value="USD">US Dollar</option>
+                                <option value="EUR">Euro</option>
+                                <option value="GBP">British Pound</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-block">Register</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -10,30 +10,92 @@
     />
   </head>
   <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <!-- Brand/Logo -->
+        <!-- Back Button -->
+        <button class="btn btn-outline-light mr-3" onclick="history.back()">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <!-- Brand -->
         <a class="navbar-brand" href="#">AppName</a>
 
-        <!-- Navbar Content -->
-        <div class="d-flex ml-auto">
-          <!-- Profile Name -->
-          <span class="navbar-text text-light mr-3">
-            Hello, {{ user.username }}
-          </span>
+        <!-- Navbar Toggler for Mobile -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-          <!-- Logout Button -->
-          <form
-            method="post"
-            action="{% url 'logout_view' %}"
-            class="form-inline"
-          >
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Logout</button>
-          </form>
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <!-- Request Payment Link -->
+            <li class="nav-item">
+              <a
+                class="nav-link btn btn-primary text-white px-3 mx-2"
+                href="{% url 'request_payment' %}"
+              >
+                <i class="fas fa-money-bill-wave"></i> Request Payment
+              </a>
+            </li>
+
+            <!-- Home Link -->
+            <li class="nav-item">
+              <form method="post" action="{% url 'pay_to_user' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info text-white px-3 mx-2">
+                  <i class="fas fa-user-shield"></i> HomePage
+                </button>
+              </form>
+            </li>
+
+            <!-- User Greeting -->
+            <li class="nav-item">
+              <span class="navbar-text text-light mx-3">
+                Hello, {{ user.username }}
+              </span>
+            </li>
+
+            <!-- Logout Button -->
+            <li class="nav-item">
+              <form
+                method="post"
+                action="{% url 'logout_view' %}"
+                class="form-inline"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+              </form>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
+
+    <h2>Promote User to Admin</h2>
+
+    <form method="POST" action={% url 'promote' %}>
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username">Enter Username:</label>
+        <input type="text" id="username" name="username" required class="form-control" />
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Promote</button>
+    </form>
+
+    {% if messages %}
+      <ul class="mt-3">
+        {% for message in messages %}
+          <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
     <h2>Check Transactions</h2>
     <form method="POST" class="mb-4">
       {% csrf_token %}
@@ -71,19 +133,26 @@
       {% csrf_token %}
       <button type="submit" class="btn btn-danger">Logout</button>
     </form>
-
+    {% if balance is not None %}
+    Balance: <strong>{{currency_code}}{{ balance }}</strong>
+    {% endif %}
     <!-- Displaying Transactions -->
     <ul class="list-group">
       {% for transaction in transactions %}
       <li class="list-group-item">
         Sent from: <strong>{{ transaction.payer }}</strong> | Received by:
         <strong>{{ transaction.payee }}</strong> | Amount:
-        <strong>{{ transaction.amount }}</strong>
-        (in selected currency) | Time: <strong>{{ transaction.timestamp }}</strong> | Success: {{ transaction.success }}
+        <strong>{{currency_code}}{{ transaction.amount }}</strong> | Time:
+        <strong>{{ transaction.timestamp }}</strong> | Success: {{transaction.success}}
       </li>
       {% empty %}
       <li class="list-group-item">No transactions found.</li>
       {% endfor %}
     </ul>
+    <div class="mt-4">
+      <a href="{% url 'request_payment' %}" class="btn btn-success"
+        >Request Payment</a
+      >
+    </div>
   </body>
 </html>

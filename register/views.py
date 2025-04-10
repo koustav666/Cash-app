@@ -1,28 +1,52 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+import requests
+from payment.models import Currency, Profile
 from register.forms import RegisterForm
 from django.contrib.auth import authenticate, login as auth_login, logout
 
 def register(request):
-    if request.method == "POST":  # Corrected
+    if request.user.is_authenticated:
+        return redirect("pay_to_user")
+    if request.method == "POST":
         form = RegisterForm(request.POST)
-        if form.is_valid():  # Corrected
-            form.save()
+        currency_code = request.POST.get("Currency")
+        currency = Currency.objects.get(code=currency_code)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.save()
+            try:
+                response = requests.get(f"http://localhost:8000/api/conversion/GBP/{currency}/750/")
+                if response.status_code == 200:
+                    data = response.json()
+                    balance = data.get("converted_amount")
+                else:
+                    balance = 750
+            except Exception as e:
+                print("Currency conversion failed:", e)
+                balance = 750
+            Profile.objects.create(
+                user=user,
+                currency=currency,
+                balance=balance,
+                admin=False
+            )
             messages.success(request, "Your account has been created. You can log in now!")
             return redirect("login_view")
         else:
             messages.error(request, "Saving user failed")
     else:
-        form = RegisterForm()  # Ensure form is always defined
+        form = RegisterForm()
 
-    return render(request, "register/register.html", {"form": form})
+    return render(request, "register/register.html", {"form": form, "currencys": ["USD", "EUR", "GBP"]})  # Added currencies for the template
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("pay_to_user") 
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
 
-        # Authenticate the user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -39,5 +63,6 @@ def login_view(request):
 
 
 def logout_view(request):
-    logout(request)
-    return redirect('login_view')
+    if request.user.is_authenticated:
+        logout(request)
+        return redirect('login_view')

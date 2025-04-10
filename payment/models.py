@@ -17,6 +17,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10,decimal_places=2,default=750)
     admin = models.BooleanField(default=False)
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, default="GBP")
     def __str__(self):
         return self.user.username
 
@@ -31,3 +32,10 @@ class Pay(models.Model):
     def __str__(self):
         return f"Payment {self.id} by {self.user}"
 
+class RequestPayment(models.Model):
+    id=models.AutoField(primary_key=True)
+    requester=models.ForeignKey(User, on_delete=models.CASCADE, related_name='requester')
+    payer=models.ForeignKey(User, on_delete=models.CASCADE, related_name='payee')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    success = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(null=True, blank=True)

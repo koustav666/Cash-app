@@ -1,108 +1,252 @@
 <!DOCTYPE html>
+{% load crispy_forms_tags %}
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transaction Page</title>
     <!-- Bootstrap 4 CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
-    <!-- AppBar / Navbar -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <!-- Brand/Logo -->
-            <a class="navbar-brand" href="#">AppName</a>
+      <div class="container">
+        <!-- Back Button -->
+        <button class="btn btn-outline-light mr-3" onclick="history.back()">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
 
-            <!-- Navbar Content -->
-            <div class="d-flex ml-auto">
-                <!-- Profile Name -->
-                <span class="navbar-text text-light mr-3">
-                    Hello, {{ user.username }}
-                </span>
+        <!-- Brand -->
+        <a class="navbar-brand" href="#">AppName</a>
 
-                <!-- Logout Button -->
-                <form method="post" action="{% url 'logout_view' %}" class="form-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Logout</button>
-                </form>
-            </div>
+        <!-- Navbar Toggler for Mobile -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <!-- Request Payment Link -->
+            <li class="nav-item">
+              <a
+                class="nav-link btn btn-primary text-white px-3 mx-2"
+                href="{% url 'request_payment' %}"
+              >
+                <i class="fas fa-money-bill-wave"></i> Request Payment
+              </a>
+            </li>
+
+            <!-- Admin Console Link -->
+            {% if flag%}
+            <li class="nav-item">
+              <form method="post" action="{% url 'check_transaction' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info text-white px-3 mx-2">
+                  <i class="fas fa-user-shield"></i> Admin Console
+                </button>
+              </form>
+            </li>
+            {% endif %}
+
+            <!-- User Greeting -->
+            <li class="nav-item">
+              <span class="navbar-text text-light mx-3">
+                Hello, {{ user.username }}
+              </span>
+            </li>
+
+            <!-- Logout Button -->
+            <li class="nav-item">
+              <form
+                method="post"
+                action="{% url 'logout_view' %}"
+                class="form-inline"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+              </form>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
-    <!-- Main Container for the Transaction Form -->
-    <div class="container mt-4">
-        <h2>Transaction Form</h2>
+      <!-- Payment Requests Section -->
+      <div class="card shadow mt-4">
+        <div class="card-header bg-warning text-dark">
+          <h4 class="mb-0">Payment Requests</h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% for request in payment_requests %}
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <strong>{{ request.requester }}</strong> requested
+                <strong>{{ currency_code }}{{ request.amount }}</strong>
+              </div>
+              <div>
+                <!-- Accept Payment -->
+                <form
+                  method="post"
+                  action="{% url 'pay_to_user' %}"
+                  class="d-inline"
+                >
+                  {% csrf_token %}
+                  <input
+                    type="hidden"
+                    name="payee"
+                    value="{{ request.requester }}"
+                  />
+                  <input
+                    type="hidden"
+                    name="amount"
+                    value="{{ request.amount }}"
+                  />
+                  <input
+                    type="hidden"
+                    name="id"
+                    value="{{ request.id }}"
+                  />
+                  <input type="hidden" name="accept_request" value="true" />
+                  <button type="submit" class="btn btn-success btn-sm">
+                    Accept
+                  </button>
+                </form>
 
-        <!-- Main Form -->
-        <form method="post" class="mb-4">
+                <!-- Reject Payment -->
+                <form
+                  method="get"
+                  action="{% url 'pay_to_user' %}"
+                  class="d-inline"
+                >
+                  {% csrf_token %}
+                  <input
+                    type="hidden"
+                    name="payee"
+                    value="{{ request.requester }}"
+                  />
+                  <input
+                    type="hidden"
+                    name="id"
+                    value="{{ request.id }}"
+                  />
+                  <input type="hidden" name="accept_request" value="false" />
+                  <button type="submit" class="btn btn-danger btn-sm">
+                    Reject
+                  </button>
+                </form>
+              </div>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-center">
+              No payment requests at the moment.
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Transaction Form -->
+      <div class="card shadow mt-4">
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0">Transaction Form</h4>
+        </div>
+        <div class="card-body">
+          <form method="post">
             {% csrf_token %}
-            
-            <!-- Display balance -->
-            <div class="form-group">
-                <label for="balance">Balance</label>
-                <div class="form-control" id="balance">{{ balance }}</div>
-            </div>
-            
-            <!-- Render the Form Fields -->
-            {{ form }} <!-- Render form using crispy if desired -->
 
-            <!-- Display error messages -->
+            <!-- Display Balance -->
+            <div class="form-group">
+              <label for="balance">Your Balance</label>
+              <div class="form-control bg-light font-weight-bold">
+                {{currency_code}}{{ balance }}
+              </div>
+            </div>
+
+            <!-- Form Fields -->
+            {{ form|crispy }}
+
+            <!-- Error Messages -->
             {% if messages %}
             <div class="alert alert-danger">
-                <ul>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
+              <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+              </ul>
             </div>
             {% endif %}
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary">Submit Comment</button>
-            
-            <!-- Reset Button -->
-            <button type="reset" class="btn btn-secondary">Reset Form</button>
-        </form>
+            <div class="d-flex justify-content-between">
+              <button type="submit" class="btn btn-primary">
+                Submit Transaction
+              </button>
+              <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+          </form>
+        </div>
+      </div>
 
-        <!-- Admin Console Form -->
-        <form method="post" action="{% url 'check_transaction' %}" class="mb-4">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-info">Admin Console</button>
-        </form>
+      <hr />
 
-        <hr>
-
-        <!-- Sent Transactions List -->
-        <h3>Sent Transactions</h3>
-        <ul class="list-group mb-4">
+      <!-- Sent Transactions -->
+      <div class="card shadow mt-4">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0">Sent Transactions</h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
             {% for s in sent %}
-                <li class="list-group-item">
-                    Sent to: <strong>{{ s.payee }}</strong> | Amount: <strong>{{ s.amount }}</strong> | Time: <strong>{{ s.timestamp }}</strong> | Success: {{ s.success }}
-                </li>
+            <li class="list-group-item">
+              Sent to: <strong>{{ s.payee }}</strong> | Amount:
+              <strong>{{ currency_code }}{{ s.amount }}</strong> | Time:
+              <strong>{{ s.timestamp }}</strong> | Success: {{ s.success }}
+            </li>
             {% empty %}
-                <li class="list-group-item">No sent transactions yet.</li>
+            <li class="list-group-item text-center">
+              No sent transactions yet.
+            </li>
             {% endfor %}
-        </ul>
+          </ul>
+        </div>
+      </div>
 
-        <!-- Received Transactions List -->
-        <h3>Received Transactions</h3>
-        <ul class="list-group">
+      <!-- Received Transactions -->
+      <div class="card shadow mt-4 mb-5">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Received Transactions</h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
             {% for s in receive %}
-                <li class="list-group-item">
-                    Received from: <strong>{{ s.payer }}</strong> | Amount: <strong>{{ s.amount }}</strong> | Success: {{ s.success }}
-                </li>
+            <li class="list-group-item">
+              Received from: <strong>{{ s.payer }}</strong> | Amount:
+              <strong>{{ currency_code }}{{ s.amount }}</strong> | Success: {{ s.success }}
+            </li>
             {% empty %}
-                <li class="list-group-item">No received transactions yet.</li>
+            <li class="list-group-item text-center">
+              No received transactions yet.
+            </li>
             {% endfor %}
-        </ul>
-
-    </div> <!-- End of Main Container -->
+          </ul>
+        </div>
+      </div>
+    </div>
 
     <!-- Bootstrap 4 JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
+  </body>
 </html>

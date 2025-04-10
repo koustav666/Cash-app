@@ -1,0 +1,50 @@
+{% load crispy_forms_tags %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <!-- Back Button -->
+        <form method="post" action="{% url 'pay_to_user' %}" class="form-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Back</button>
+        </form>
+
+        <!-- Brand/Logo -->
+        <a class="navbar-brand" href="#">AppName</a>
+
+        <!-- Navbar Content -->
+        <div class="d-flex ml-auto">
+            <!-- Profile Name -->
+            <span class="navbar-text text-light mr-3">
+                Hello, {{ user.username }}
+            </span>
+
+            <!-- Logout Button -->
+            <form method="post" action="{% url 'logout_view' %}" class="form-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<form method="post" class="mt-4">
+    <div class="container">
+        <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <h2 class="mb-0">Request Payment in {{currency_code}}</h2>
+            </div>
+            <div class="card-body p-4">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    {{ form|crispy }} <!-- Uses crispy-forms for Bootstrap styling -->
+                </div>
+
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-money-bill-wave"></i> Request Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
