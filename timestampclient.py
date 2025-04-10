@@ -1,5 +1,5 @@
 
-import thriftpy
+import thriftpy2 as thriftpy
 from thriftpy.rpc import make_client
 from thriftpy.thrift import TException
 timestamp_thrift = thriftpy.load('timestampservice.thrift', module_name='timestamp_thrift')

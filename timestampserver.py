@@ -1,6 +1,6 @@
 
 import datetime
-import thriftpy
+import thriftpy2 as thriftpy
 from thriftpy2.rpc import make_server
 timestamp_thrift = thriftpy.load('timestampservice.thrift', module_name='timestamp_thrift')
 Timestamp = timestamp_thrift.TimestampService
